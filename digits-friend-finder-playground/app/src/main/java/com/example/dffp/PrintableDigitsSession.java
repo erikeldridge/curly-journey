@@ -1,4 +1,4 @@
-package com.example.ff1;
+package com.example.dffp;
 
 import com.digits.sdk.android.DigitsSession;
 import com.digits.sdk.android.Email;

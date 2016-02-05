@@ -1,1 +1,1 @@
-include ':FF1:app', ':digits-android', ':digits-android:digits'
+include ':digits-friend-finder-playground:app', ':digits-android:digits'

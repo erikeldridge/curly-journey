@@ -1,6 +1,5 @@
-package com.example.ff1;
+package com.example.dffp;
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;

@@ -1,5 +1,6 @@
 package com.example.ff1;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -21,16 +22,13 @@ import com.twitter.sdk.android.core.TwitterException;
 
 import io.fabric.sdk.android.Fabric;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener {
-
-    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = "";
-    private static final String TWITTER_SECRET = "";
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener, AuthCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Resources resources = getResources();
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(resources.getString(R.string.twitter_key), resources.getString(R.string.twitter_secret));
         Fabric.with(this, new TwitterCore(authConfig), new Digits());
         DigitsSession session = Digits.getSessionManager().getActiveSession();
         Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
@@ -40,18 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button getButton = (Button) findViewById(R.id.get);
         getButton.setOnClickListener(this);
         DigitsAuthButton digitsButton = (DigitsAuthButton) findViewById(R.id.auth_button);
-        digitsButton.setCallback(new AuthCallback() {
-            @Override
-            public void success(DigitsSession session, String phoneNumber) {
-                Log.d(Constants.TAG, "session success" + ", phonenumber=" + phoneNumber);
-                Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
-            }
-
-            @Override
-            public void failure(DigitsException exception) {
-                Log.d(Constants.TAG, exception.toString());
-            }
-        });
+        digitsButton.setCallback(this);
         Digits.getInstance().addSessionListener(this);
     }
 
@@ -86,5 +73,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void changed(DigitsSession session) {
         Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
+    }
+
+    @Override
+    public void success(DigitsSession session, String phoneNumber) {
+        Log.d(Constants.TAG, "session success" + ", phonenumber=" + phoneNumber);
+        Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
+    }
+
+    @Override
+    public void failure(DigitsException exception) {
+        Log.d(Constants.TAG, exception.toString());
     }
 }

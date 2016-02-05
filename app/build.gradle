@@ -28,8 +28,8 @@ android {
     }
     buildTypes {
         all {
-            loadSecretProps().each { prop ->
-                resValue "string", prop.key, prop.value
+            getFabricProps().each { prop ->
+                buildConfigField "String", prop.key, prop.value
             }
         }
         release {
@@ -48,8 +48,8 @@ dependencies {
     }
 }
 
-def loadSecretProps(){
+def getFabricProps(){
     def Properties props = new Properties()
-    props.load(project.rootProject.file('secret.properties').newDataInputStream())
+    props.load(project.rootProject.file('app/fabric.properties').newDataInputStream())
     return props
 }

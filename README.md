@@ -1,4 +1,4 @@
-# curly-journey
+# digits-friend-finder-playground
 
 ## Goals
 

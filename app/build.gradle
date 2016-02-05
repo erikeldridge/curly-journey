@@ -29,7 +29,7 @@ android {
     buildTypes {
         all {
             getFabricProps().each { prop ->
-                buildConfigField "String", prop.key, prop.value
+                buildConfigField "String", prop.key, '"${prop.value}"'
             }
         }
         release {

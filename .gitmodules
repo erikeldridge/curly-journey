@@ -1,0 +1,3 @@
+[submodule "digits-android"]
+	path = digits-android
+	url = git@github.com:twitter/digits-android.git

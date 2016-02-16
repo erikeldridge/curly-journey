@@ -1,4 +1,4 @@
-package com.example.dffp;
+package com.example.dp;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

@@ -1,7 +1,6 @@
-package com.example.dffp;
+package com.example.dp;
 
 import com.digits.sdk.android.DigitsSession;
-import com.digits.sdk.android.Email;
 
 public class PrintableDigitsSession {
     final DigitsSession session;

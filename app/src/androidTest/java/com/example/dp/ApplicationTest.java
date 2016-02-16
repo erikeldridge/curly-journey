@@ -1,4 +1,4 @@
-package com.example.dffp;
+package com.example.dp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

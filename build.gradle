@@ -15,4 +15,3 @@ allprojects {
     }
 }
 
-apply from: 'digits-android/build.gradle'

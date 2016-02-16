@@ -9,10 +9,14 @@ Implement the minimum required to:
 * commit project to a public repo, eg generalize keys and secrets
 
 
+## Non-goals
+
+* Build against the digits-android repo. Use the [digits-android's sample app](https://github.com/twitter/digits-android/tree/master/samples/app) for that
+
+
 ## Set up
 
 1. Clone this repo
-1. Cd into repo and run `git submodule init` and `git submodule update` to clone digits-android
 1. Import project into Android Studio
 1. Install Fabric plugin for Android Studio
 1. Use the plugin to install Digits
@@ -36,3 +40,4 @@ Implement the minimum required to:
 * [Digits' _Sign In with Phone Number_ Android tutorial](https://fabric.io/kits/android/digits/features)
 * [Digits' _Find Your Friends_ documentation](https://docs.fabric.io/android/digits/find-friends.html)
 * [Digits' _Find Your Friends_ iOS tutorial](https://fabric.io/kits/ios/digits/features)
+* [Twitter's digits-android project](https://github.com/twitter/digits-android)

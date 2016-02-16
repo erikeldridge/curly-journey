@@ -22,12 +22,15 @@ import com.twitter.sdk.android.core.TwitterException;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener, AuthCallback {
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
+    private static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(Constants.TAG, String.format("key=%s, secret=%s", BuildConfig.TWITTER_KEY, BuildConfig.TWITTER_SECRET));
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(BuildConfig.TWITTER_KEY, BuildConfig.TWITTER_SECRET);
+        Log.d(Constants.TAG, String.format("TWITTER_KEY=%s, TWITTER_SECRET=%s", TWITTER_KEY, TWITTER_SECRET));
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric.with(this, new TwitterCore(authConfig), new Digits());
         DigitsSession session = Digits.getSessionManager().getActiveSession();
         Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());

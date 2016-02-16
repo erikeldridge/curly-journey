@@ -25,6 +25,7 @@
         </receiver>
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="aadfced66452f6c11d59696994156b1236810fbd" />
+            android:value="aadfced66452f6c11d59696994156b1236810fbd"
+            />
     </application>
 </manifest>

@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(Constants.TAG, String.format("key=%s, secret=%s", BuildConfig.TWITTER_KEY, BuildConfig.TWITTER_SECRET));
         TwitterAuthConfig authConfig = new TwitterAuthConfig(BuildConfig.TWITTER_KEY, BuildConfig.TWITTER_SECRET);
         Fabric.with(this, new TwitterCore(authConfig), new Digits());
         DigitsSession session = Digits.getSessionManager().getActiveSession();

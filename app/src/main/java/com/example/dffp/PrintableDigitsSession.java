@@ -11,18 +11,30 @@ public class PrintableDigitsSession {
 
     @Override
     public String toString() {
-        Email email = session.getEmail();
         String address;
-        if (email == null) {
+        String phoneNumber;
+        String isValidUser;
+        String isLoggedOutUser;
+        if (session == null) {
             address = "null";
+            phoneNumber = "null";
+            isValidUser = "null";
+            isLoggedOutUser = "null";
         } else {
-            address = email.getAddress();
+            isValidUser = String.valueOf(session.isValidUser());
+            isLoggedOutUser = String.valueOf(session.isLoggedOutUser());
+            phoneNumber = session.getPhoneNumber();
+            if (session.getEmail() == null) {
+                address = "null";
+            } else {
+                address = session.getEmail().getAddress();
+            }
         }
-        return "DigitsSession{"
-            + ", isValidUser=" + session.isValidUser()
+        return "PrintableDigitsSession{"
+            + ", isValidUser=" + isValidUser
             + ", getEmail=" + address
-            + ", isLoggedOutUser=" + session.isLoggedOutUser()
-            + ", getPhoneNumber=" + session.getPhoneNumber()
+            + ", isLoggedOutUser=" + isLoggedOutUser
+            + ", getPhoneNumber=" + phoneNumber
             + "}";
     }
 }

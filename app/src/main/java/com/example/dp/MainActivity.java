@@ -1,14 +1,22 @@
 package com.example.dp;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 
 import com.digits.sdk.android.AuthCallback;
 import com.digits.sdk.android.Contacts;
 import com.digits.sdk.android.ContactsCallback;
+import com.digits.sdk.android.ContactsUploadResult;
+import com.digits.sdk.android.ContactsUploadService;
 import com.digits.sdk.android.Digits;
 import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
@@ -19,21 +27,37 @@ import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.fabric.sdk.android.DefaultLogger;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener, AuthCallback {
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
-    private static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
+    static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
+    static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
+
+    static final String TAG = "dp";
+    List<String> logBuffer = new ArrayList<>();
+    ArrayAdapter<String> logAdapter;
+    BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(Constants.TAG, String.format("TWITTER_KEY=%s, TWITTER_SECRET=%s", TWITTER_KEY, TWITTER_SECRET));
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-        Fabric.with(this, new TwitterCore(authConfig), new Digits());
-        DigitsSession session = Digits.getSessionManager().getActiveSession();
-        Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
+        logAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, logBuffer);
+        broadcastReceiver = new ContactsUploadResultReceiver();
+        log(String.format("TWITTER_KEY=%s, TWITTER_SECRET=%s", TWITTER_KEY, TWITTER_SECRET));
+        TwitterAuthConfig twitterConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric fabric = new Fabric.Builder(this)
+                .kits(new TwitterCore(twitterConfig), new Digits())
+                .logger(new DefaultLogger(Log.DEBUG))
+                .debuggable(true)
+                .build();
+        Fabric.with(fabric);
+        DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
+        log(new PrintableDigitsSession(digitsSession).toString());
         setContentView(R.layout.activity_main);
         Button uploadButton = (Button) findViewById(R.id.upload);
         uploadButton.setOnClickListener(this);
@@ -42,6 +66,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DigitsAuthButton digitsButton = (DigitsAuthButton) findViewById(R.id.auth_button);
         digitsButton.setCallback(this);
         Digits.getInstance().addSessionListener(this);
+        ListView logView = (ListView) findViewById(R.id.log);
+        logView.setAdapter(logAdapter);
+    }
+
+    @Override
+    protected void onStop() {
+        unregisterReceiver(broadcastReceiver);
+        super.onStop();
+    }
+
+    @Override
+    protected void onStart() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.digits.sdk.android.UPLOAD_COMPLETE");
+        filter.addAction("com.digits.sdk.android.UPLOAD_FAILED");
+        registerReceiver(broadcastReceiver, filter);
+        super.onStart();
     }
 
     @Override
@@ -57,15 +98,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void success(Result<Contacts> result) {
                                 if (result.data.users != null) {
-                                    Log.d(Constants.TAG, "result=" + result.toString());
+                                    log("result=" + result.toString());
                                 } else {
-                                    Log.d(Constants.TAG, "result=null");
+                                    log("result=null");
                                 }
                             }
 
                             @Override
                             public void failure(TwitterException exception) {
-                                Log.d(Constants.TAG, exception.toString());
+                                log(exception.toString());
                             }
                         });
                 break;
@@ -74,17 +115,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void changed(DigitsSession session) {
-        Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
+        log("digits result changed, session=" + new PrintableDigitsSession(session).toString());
     }
 
     @Override
     public void success(DigitsSession session, String phoneNumber) {
-        Log.d(Constants.TAG, "session success" + ", phonenumber=" + phoneNumber);
-        Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
+        log("digits result success, session=" + new PrintableDigitsSession(session).toString() + ", phonenumber=" + phoneNumber);
     }
 
     @Override
     public void failure(DigitsException exception) {
-        Log.d(Constants.TAG, exception.toString());
+        log(exception.toString());
+    }
+
+    class ContactsUploadResultReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ContactsUploadService.UPLOAD_COMPLETE.equals(intent.getAction())) {
+                ContactsUploadResult result = intent
+                        .getParcelableExtra(ContactsUploadService.UPLOAD_COMPLETE_EXTRA);
+                log("result=" + result.toString());
+            } else {
+                log("result=fail, intent=" + intent.toString());
+            }
+        }
+    }
+
+    void log(String text) {
+        Log.d(TAG, text);
+        logBuffer.add(text);
+        logAdapter.notifyDataSetChanged();
     }
 }

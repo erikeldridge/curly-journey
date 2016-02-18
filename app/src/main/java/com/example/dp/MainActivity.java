@@ -1,5 +1,6 @@
 package com.example.dp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String DIGITS_SECRET = BuildConfig.DIGITS_SECRET;
     private static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
     private static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
+    private TwitterLoginButton twitterButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
         Log.d(Constants.TAG, new PrintableDigitsSession(digitsSession).toString());
         TwitterSession twitterSession = Twitter.getSessionManager().getActiveSession();
-        if (twitterSession != null) {
-            Log.d(Constants.TAG, twitterSession.toString());
-        }
+        Log.d(Constants.TAG, new PrintableTwitterSession(twitterSession).toString());
         setContentView(R.layout.activity_main);
         Button uploadButton = (Button) findViewById(R.id.upload);
         uploadButton.setOnClickListener(this);
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getButton.setOnClickListener(this);
         DigitsAuthButton digitsButton = (DigitsAuthButton) findViewById(R.id.digits_button);
         digitsButton.setCallback(this);
-        TwitterLoginButton twitterButton = (TwitterLoginButton) findViewById(R.id.twitter_button);
+        twitterButton = (TwitterLoginButton) findViewById(R.id.twitter_button);
         twitterButton.setCallback(new TwitterCallback());
         Digits.getInstance().addSessionListener(this);
     }
@@ -93,13 +93,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void changed(DigitsSession session) {
-        Log.d(Constants.TAG, "digits session changed, session=" + new PrintableDigitsSession(session).toString());
+        Log.d(Constants.TAG, "digits result changed, session=" + new PrintableDigitsSession(session).toString());
     }
 
     @Override
     public void success(DigitsSession session, String phoneNumber) {
-        Log.d(Constants.TAG, "digits session success" + ", phonenumber=" + phoneNumber);
-        Log.d(Constants.TAG, new PrintableDigitsSession(session).toString());
+        Log.d(Constants.TAG, "digits result success, session=" + new PrintableDigitsSession(session).toString() + ", phonenumber=" + phoneNumber);
     }
 
     @Override
@@ -111,12 +110,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void success(Result<TwitterSession> result) {
-            Log.d(Constants.TAG, "twitter session success" + ", result=" + result.toString());
+            Log.d(Constants.TAG, "twitter result success, result=" + new PrintableTwitterResult(result).toString());
         }
 
         @Override
         public void failure(TwitterException e) {
-            Log.d(Constants.TAG, "twitter session failure" + ", e=" + e.getMessage());
+            Log.d(Constants.TAG, "twitter result failure" + ", e=" + e.getMessage());
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(Constants.TAG, "twitter result onActivityResult, requestCode=" + requestCode + ", resultCode=" + resultCode + ", data=" + data);
+
+        // Pass the activity result to the login button.
+        twitterButton.onActivityResult(requestCode, resultCode, data);
     }
 }

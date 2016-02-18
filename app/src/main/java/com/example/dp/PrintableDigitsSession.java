@@ -29,7 +29,7 @@ public class PrintableDigitsSession {
                 address = session.getEmail().getAddress();
             }
         }
-        return "PrintableDigitsSession{"
+        return "DigitsSession{"
             + ", isValidUser=" + isValidUser
             + ", getEmail=" + address
             + ", isLoggedOutUser=" + isLoggedOutUser

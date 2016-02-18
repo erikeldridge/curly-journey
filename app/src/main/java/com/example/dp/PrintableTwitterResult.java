@@ -23,7 +23,7 @@ public class PrintableTwitterResult {
         } else {
             response = result.response.toString();
         }
-        return "PrintableTwitterResult{"
+        return "TwitterResult{"
             + ", session=" + session
             + ", response=" + response
             + "}";

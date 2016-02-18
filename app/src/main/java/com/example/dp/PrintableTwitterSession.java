@@ -26,7 +26,7 @@ public class PrintableTwitterSession {
             userName = session.getUserName();
             userId = String.valueOf(session.getUserId());
         }
-        return "PrintableTwitterSession{"
+        return "TwitterSession{"
                 + ", token=" + token
                 + ", secret=" + secret
                 + ", userName=" + userName

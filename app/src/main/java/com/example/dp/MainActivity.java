@@ -1,15 +1,22 @@
 package com.example.dp;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 
 import com.digits.sdk.android.AuthCallback;
 import com.digits.sdk.android.Contacts;
 import com.digits.sdk.android.ContactsCallback;
+import com.digits.sdk.android.ContactsUploadResult;
+import com.digits.sdk.android.ContactsUploadService;
 import com.digits.sdk.android.Digits;
 import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
@@ -23,21 +30,31 @@ import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.fabric.sdk.android.DefaultLogger;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener, AuthCallback {
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String DIGITS_KEY = BuildConfig.DIGITS_KEY;
-    private static final String DIGITS_SECRET = BuildConfig.DIGITS_SECRET;
-    private static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
-    private static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
-    private TwitterLoginButton twitterButton;
+    static final String DIGITS_KEY = BuildConfig.DIGITS_KEY;
+    static final String DIGITS_SECRET = BuildConfig.DIGITS_SECRET;
+    static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
+    static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
+
+    static final String TAG = "dp";
+    TwitterLoginButton twitterButton;
+    List<String> logBuffer = new ArrayList<>();
+    ArrayAdapter<String> logAdapter;
+    BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(Constants.TAG, String.format(
+        logAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, logBuffer);
+        broadcastReceiver = new ContactsUploadResultReceiver();
+        log(String.format(
                 "DIGITS_KEY=%s, DIGITS_SECRET=%s, TWITTER_KEY=%s, TWITTER_SECRET=%s",
                 DIGITS_KEY, DIGITS_SECRET, TWITTER_KEY, TWITTER_SECRET));
         TwitterAuthConfig twitterConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
@@ -48,9 +65,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build();
         Fabric.with(fabric);
         DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
-        Log.d(Constants.TAG, new PrintableDigitsSession(digitsSession).toString());
+        log(new PrintableDigitsSession(digitsSession).toString());
         TwitterSession twitterSession = Twitter.getSessionManager().getActiveSession();
-        Log.d(Constants.TAG, new PrintableTwitterSession(twitterSession).toString());
+        log(new PrintableTwitterSession(twitterSession).toString());
         setContentView(R.layout.activity_main);
         Button uploadButton = (Button) findViewById(R.id.upload);
         uploadButton.setOnClickListener(this);
@@ -61,6 +78,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         twitterButton = (TwitterLoginButton) findViewById(R.id.twitter_button);
         twitterButton.setCallback(new TwitterCallback());
         Digits.getInstance().addSessionListener(this);
+        ListView logView = (ListView) findViewById(R.id.log);
+        logView.setAdapter(logAdapter);
+    }
+
+    @Override
+    protected void onStop() {
+        unregisterReceiver(broadcastReceiver);
+        super.onStop();
+    }
+
+    @Override
+    protected void onStart() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.digits.sdk.android.UPLOAD_COMPLETE");
+        filter.addAction("com.digits.sdk.android.UPLOAD_FAILED");
+        registerReceiver(broadcastReceiver, filter);
+        super.onStart();
     }
 
     @Override
@@ -76,15 +110,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void success(Result<Contacts> result) {
                                 if (result.data.users != null) {
-                                    Log.d(Constants.TAG, "result=" + result.toString());
+                                    log("result=" + result.toString());
                                 } else {
-                                    Log.d(Constants.TAG, "result=null");
+                                    log("result=null");
                                 }
                             }
 
                             @Override
                             public void failure(TwitterException exception) {
-                                Log.d(Constants.TAG, exception.toString());
+                                log(exception.toString());
                             }
                         });
                 break;
@@ -93,38 +127,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void changed(DigitsSession session) {
-        Log.d(Constants.TAG, "digits result changed, session=" + new PrintableDigitsSession(session).toString());
+        log("digits result changed, session=" + new PrintableDigitsSession(session).toString());
     }
 
     @Override
     public void success(DigitsSession session, String phoneNumber) {
-        Log.d(Constants.TAG, "digits result success, session=" + new PrintableDigitsSession(session).toString() + ", phonenumber=" + phoneNumber);
+        log("digits result success, session=" + new PrintableDigitsSession(session).toString() + ", phonenumber=" + phoneNumber);
     }
 
     @Override
     public void failure(DigitsException exception) {
-        Log.d(Constants.TAG, exception.toString());
+        log(exception.toString());
     }
 
     class TwitterCallback extends Callback<TwitterSession> {
 
         @Override
         public void success(Result<TwitterSession> result) {
-            Log.d(Constants.TAG, "twitter result success, result=" + new PrintableTwitterResult(result).toString());
+            log("twitter result success, result=" + new PrintableTwitterResult(result).toString());
         }
 
         @Override
         public void failure(TwitterException e) {
-            Log.d(Constants.TAG, "twitter result failure" + ", e=" + e.getMessage());
+            log("twitter result failure" + ", e=" + e.getMessage());
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(Constants.TAG, "twitter result onActivityResult, requestCode=" + requestCode + ", resultCode=" + resultCode + ", data=" + data);
+        log("twitter result onActivityResult, requestCode=" + requestCode + ", resultCode=" + resultCode + ", data=" + data);
 
         // Pass the activity result to the login button.
         twitterButton.onActivityResult(requestCode, resultCode, data);
+    }
+
+    class ContactsUploadResultReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ContactsUploadService.UPLOAD_COMPLETE.equals(intent.getAction())) {
+                ContactsUploadResult result = intent
+                        .getParcelableExtra(ContactsUploadService.UPLOAD_COMPLETE_EXTRA);
+                log("result=" + result.toString());
+            } else {
+                log("result=fail, intent=" + intent.toString());
+            }
+        }
+    }
+
+    void log(String text) {
+        Log.d(TAG, text);
+        logBuffer.add(text);
+        logAdapter.notifyDataSetChanged();
     }
 }

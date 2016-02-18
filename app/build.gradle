@@ -49,6 +49,9 @@ dependencies {
     compile('com.digits.sdk.android:digits:1.9.4@aar') {
         transitive = true;
     }
+    compile('com.twitter.sdk.android:twitter:1.12.1@aar') {
+        transitive = true;
+    }
 }
 
 def getFabricProps(){

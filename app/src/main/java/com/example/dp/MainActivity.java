@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.upload:
                 Digits.getInstance().getContactsClient().startContactsUpload();
                 break;
-            default:
+            case R.id.get:
                 Digits.getInstance().getContactsClient().lookupContactMatches(null, null,
                         new ContactsCallback<Contacts>() {
 
@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 log(exception.toString());
                             }
                         });
+            default:
                 break;
         }
     }
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (ContactsUploadService.UPLOAD_COMPLETE.equals(intent.getAction())) {
                 ContactsUploadResult result = intent
                         .getParcelableExtra(ContactsUploadService.UPLOAD_COMPLETE_EXTRA);
-                log("result=" + result.toString());
+                log("result=" + new PrintableContactsUploadResult(result).toString());
             } else {
                 log("result=fail, intent=" + intent.toString());
             }

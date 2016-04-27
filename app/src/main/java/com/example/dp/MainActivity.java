@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
         log(new PrintableDigitsSession(digitsSession).toString());
         setContentView(R.layout.activity_main);
+        Button clearSessionButton = (Button) findViewById(R.id.clear_session);
+        clearSessionButton.setOnClickListener(this);
         Button uploadButton = (Button) findViewById(R.id.upload);
         uploadButton.setOnClickListener(this);
         Button getButton = (Button) findViewById(R.id.get);
@@ -88,6 +90,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.clear_session:
+                Digits.getInstance().getSessionManager().clearActiveSession();
+                log("clear session, session="+new PrintableDigitsSession(
+                        Digits.getInstance().getSessionManager().getActiveSession()).toString());
+                break;
             case R.id.upload:
                 Digits.getInstance().getContactsClient().startContactsUpload();
                 break;

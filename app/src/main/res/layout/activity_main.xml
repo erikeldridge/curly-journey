@@ -10,15 +10,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <Button
+        android:id="@+id/clear_session"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear session" />
+    <Button
         android:id="@+id/upload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Upload" />
+        android:text="Upload contacts" />
     <Button
         android:id="@+id/get"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get" />
+        android:text="Get contact matches" />
     <ListView
         android:id="@+id/log"
         android:layout_width="match_parent"

@@ -28,10 +28,11 @@ Implement the minimum required to:
 
 1. Sync gradle to generate BuildConfig
 1. Build and install app on a device with an address book
-1. Tap "use my phone number" to log into app
-1. Tap "upload" upload contacts
-1. Tap "get" to get a list of your contacts who are using this app
-1. Filter logs by "dp" tag
+1. Tap "Use my phone number" to log into app
+1. Tap "Upload contacts" to upload contacts
+1. Tap "Get contact matches" to get a list of your contacts who are using this app
+1. Tap "Clear session" to log out
+1. Filter logs by "Digits Playground" tag
 
 
 ## References

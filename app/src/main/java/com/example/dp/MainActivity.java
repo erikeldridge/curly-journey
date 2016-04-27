@@ -22,6 +22,7 @@ import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
 import com.digits.sdk.android.DigitsSession;
 import com.digits.sdk.android.SessionListener;
+import com.google.gson.Gson;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     List<String> logBuffer = new ArrayList<>();
     ArrayAdapter<String> logAdapter;
     BroadcastReceiver broadcastReceiver;
+    Gson jsonParser = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build();
         Fabric.with(fabric);
         DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
-        log("initializing, TWITTER_KEY=%s, TWITTER_SECRET=%s, session=%s", TWITTER_KEY, TWITTER_SECRET, new PrintableDigitsSession(digitsSession));
+        log("initializing, TWITTER_KEY=%s, TWITTER_SECRET=%s, session=%s", TWITTER_KEY, TWITTER_SECRET, jsonParser.toJson(digitsSession));
         setContentView(R.layout.activity_main);
         Button clearSessionButton = (Button) findViewById(R.id.clear_session);
         clearSessionButton.setOnClickListener(this);
@@ -90,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.clear_session:
                 Digits.getInstance().getSessionManager().clearActiveSession();
-                log("clear session, session=%s", new PrintableDigitsSession(
+                log("clear session, session=%s", jsonParser.toJson(
                         Digits.getInstance().getSessionManager().getActiveSession()));
                 break;
             case R.id.upload:
@@ -102,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public void success(Result<Contacts> result) {
-                                log("contact match lookup success, result=%s", result);
+                                log("contact match lookup success, result=%s", jsonParser.toJson(result));
                             }
 
                             @Override
@@ -117,12 +119,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void changed(DigitsSession session) {
-        log("digits session changed, session=%s", new PrintableDigitsSession(session));
+        log("digits session changed, session=%s", jsonParser.toJson(session));
     }
 
     @Override
     public void success(DigitsSession session, String phoneNumber) {
-        log("digits auth success, session=%s, phonenumber=%s", new PrintableDigitsSession(session), phoneNumber);
+        log("digits auth success, session=%s, phonenumber=%s", jsonParser.toJson(session), phoneNumber);
     }
 
     @Override
@@ -136,9 +138,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (ContactsUploadService.UPLOAD_COMPLETE.equals(intent.getAction())) {
                 ContactsUploadResult result = intent
                         .getParcelableExtra(ContactsUploadService.UPLOAD_COMPLETE_EXTRA);
-                log("contacts upload success, result=%s", new PrintableContactsUploadResult(result));
+                log("contacts upload success, result=%s", jsonParser.toJson(result));
             } else {
-                log("contacts upload failure, intent=%s", intent.toString());
+                log("contacts upload failure, intent=%s", jsonParser.toJson(intent));
             }
         }
     }

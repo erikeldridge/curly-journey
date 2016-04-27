@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
     static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
 
-    static final String TAG = "dp";
     List<String> logBuffer = new ArrayList<>();
     ArrayAdapter<String> logAdapter;
     BroadcastReceiver broadcastReceiver;
@@ -48,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         logAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, logBuffer);
         broadcastReceiver = new ContactsUploadResultReceiver();
-        log(String.format("TWITTER_KEY=%s, TWITTER_SECRET=%s", TWITTER_KEY, TWITTER_SECRET));
         TwitterAuthConfig twitterConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric fabric = new Fabric.Builder(this)
                 .kits(new TwitterCore(twitterConfig), new Digits())
@@ -57,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build();
         Fabric.with(fabric);
         DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
-        log(new PrintableDigitsSession(digitsSession).toString());
+        log("initializing, TWITTER_KEY=%s, TWITTER_SECRET=%s, session=%s", TWITTER_KEY, TWITTER_SECRET, new PrintableDigitsSession(digitsSession));
         setContentView(R.layout.activity_main);
         Button clearSessionButton = (Button) findViewById(R.id.clear_session);
         clearSessionButton.setOnClickListener(this);
@@ -92,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.clear_session:
                 Digits.getInstance().getSessionManager().clearActiveSession();
-                log("clear session, session="+new PrintableDigitsSession(
-                        Digits.getInstance().getSessionManager().getActiveSession()).toString());
+                log("clear session, session=%s", new PrintableDigitsSession(
+                        Digits.getInstance().getSessionManager().getActiveSession()));
                 break;
             case R.id.upload:
                 Digits.getInstance().getContactsClient().startContactsUpload();
@@ -104,11 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public void success(Result<Contacts> result) {
-                                if (result.data.users != null) {
-                                    log("result=" + result.toString());
-                                } else {
-                                    log("result=null");
-                                }
+                                log("contact match lookup success, result=%s", result);
                             }
 
                             @Override
@@ -123,12 +117,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void changed(DigitsSession session) {
-        log("digits result changed, session=" + new PrintableDigitsSession(session).toString());
+        log("digits session changed, session=%s", new PrintableDigitsSession(session));
     }
 
     @Override
     public void success(DigitsSession session, String phoneNumber) {
-        log("digits result success, session=" + new PrintableDigitsSession(session).toString() + ", phonenumber=" + phoneNumber);
+        log("digits auth success, session=%s, phonenumber=%s", new PrintableDigitsSession(session), phoneNumber);
     }
 
     @Override
@@ -142,15 +136,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (ContactsUploadService.UPLOAD_COMPLETE.equals(intent.getAction())) {
                 ContactsUploadResult result = intent
                         .getParcelableExtra(ContactsUploadService.UPLOAD_COMPLETE_EXTRA);
-                log("result=" + new PrintableContactsUploadResult(result).toString());
+                log("contacts upload success, result=%s", new PrintableContactsUploadResult(result));
             } else {
-                log("result=fail, intent=" + intent.toString());
+                log("contacts upload failure, intent=%s", intent.toString());
             }
         }
     }
 
-    void log(String text) {
-        Log.d(TAG, text);
+    void log(String format, Object... args) {
+        final String text = String.format(format, args);
+        Log.d("Digits Playground", text);
         logBuffer.add(text);
         logAdapter.notifyDataSetChanged();
     }

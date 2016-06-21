@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -105,6 +106,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void success(Result<Contacts> result) {
                                 log("contact match lookup success, result=%s", jsonParser.toJson(result));
+                                final String cursor = result != null
+                                        && result.data != null
+                                        && result.data.nextCursor != null
+                                        ? result.data.nextCursor : "";
+                                if (!TextUtils.isEmpty(cursor)) {
+                                    Digits.getInstance().getContactsClient().lookupContactMatches(
+                                            cursor, null, this);
+                                }
                             }
 
                             @Override

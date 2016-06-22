@@ -16,6 +16,7 @@ import android.widget.ListView;
 import com.digits.sdk.android.AuthCallback;
 import com.digits.sdk.android.Contacts;
 import com.digits.sdk.android.ContactsCallback;
+import com.digits.sdk.android.ContactsUploadFailureResult;
 import com.digits.sdk.android.ContactsUploadResult;
 import com.digits.sdk.android.ContactsUploadService;
 import com.digits.sdk.android.Digits;
@@ -105,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public void success(Result<Contacts> result) {
-                                log("contact match lookup success, result=%s", jsonParser.toJson(result));
+                                log("contact match lookup success, result.data=%s",
+                                        result != null && result.data != null ? result.data : "null");
                                 final String cursor = result != null
                                         && result.data != null
                                         && result.data.nextCursor != null
@@ -147,9 +149,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (ContactsUploadService.UPLOAD_COMPLETE.equals(intent.getAction())) {
                 ContactsUploadResult result = intent
                         .getParcelableExtra(ContactsUploadService.UPLOAD_COMPLETE_EXTRA);
-                log("contacts upload success, result=%s", jsonParser.toJson(result));
+                log("contacts upload success, result=%s", result.toString());
             } else {
-                log("contacts upload failure, intent=%s", jsonParser.toJson(intent));
+                ContactsUploadFailureResult result = intent
+                        .getParcelableExtra(ContactsUploadService.UPLOAD_FAILED_EXTRA);
+                log("contacts upload failure, result=%s", result.toString());
             }
         }
     }

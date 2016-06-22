@@ -23,14 +23,17 @@ import com.digits.sdk.android.Digits;
 import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
 import com.digits.sdk.android.DigitsSession;
+import com.digits.sdk.android.DigitsUser;
 import com.digits.sdk.android.SessionListener;
 import com.google.gson.Gson;
 import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterApiException;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.fabric.sdk.android.DefaultLogger;
@@ -106,12 +109,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public void success(Result<Contacts> result) {
-                                log("contact match lookup success, result.data=%s",
-                                        result != null && result.data != null ? result.data : "null");
+                                final List<DigitsUser> matches = result != null
+                                        && result.data != null
+                                        && result.data.users != null
+                                        ? result.data.users : Collections.<DigitsUser>emptyList();
                                 final String cursor = result != null
                                         && result.data != null
-                                        && result.data.nextCursor != null
-                                        ? result.data.nextCursor : "";
+                                        ? result.data.nextCursor : null;
+                                log("contact match lookup success, matches=%s, cursor=%s",
+                                        matches, cursor);
                                 if (!TextUtils.isEmpty(cursor)) {
                                     Digits.getInstance().getContactsClient().lookupContactMatches(
                                             cursor, null, this);
@@ -120,7 +126,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public void failure(TwitterException exception) {
-                                log(exception.toString());
+                                final TwitterApiException apiException =
+                                        (TwitterApiException) exception;
+                                log("errorCode=%d, errorMessage=%s",
+                                        apiException.getErrorCode(),
+                                        apiException.getErrorMessage());
                             }
                         });
             default:

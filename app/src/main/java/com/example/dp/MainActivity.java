@@ -13,9 +13,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.crashlytics.android.answers.Answers;
 import com.digits.sdk.android.AuthCallback;
 import com.digits.sdk.android.Contacts;
 import com.digits.sdk.android.ContactsCallback;
+import com.digits.sdk.android.ContactsUploadFailureDetails;
 import com.digits.sdk.android.ContactsUploadFailureResult;
 import com.digits.sdk.android.ContactsUploadResult;
 import com.digits.sdk.android.ContactsUploadService;
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         broadcastReceiver = new ContactsUploadResultReceiver();
         TwitterAuthConfig twitterConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric fabric = new Fabric.Builder(this)
-                .kits(new TwitterCore(twitterConfig), new Digits())
+                .kits(new TwitterCore(twitterConfig), new Answers(), new Digits())
                 .logger(new DefaultLogger(Log.DEBUG))
                 .debuggable(true)
                 .build();
@@ -96,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.clear_session:
-                Digits.getInstance().getSessionManager().clearActiveSession();
+                Digits.getSessionManager().clearActiveSession();
                 log("clear session, session=%s", jsonParser.toJson(
-                        Digits.getInstance().getSessionManager().getActiveSession()));
+                        Digits.getSessionManager().getActiveSession()));
                 break;
             case R.id.upload:
                 Digits.getInstance().getContactsClient().startContactsUpload();

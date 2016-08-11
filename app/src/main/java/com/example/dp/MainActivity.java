@@ -15,18 +15,17 @@ import android.widget.ListView;
 
 import com.crashlytics.android.answers.Answers;
 import com.digits.sdk.android.AuthCallback;
-import com.digits.sdk.android.Contacts;
 import com.digits.sdk.android.ContactsCallback;
-import com.digits.sdk.android.ContactsUploadFailureDetails;
 import com.digits.sdk.android.ContactsUploadFailureResult;
-import com.digits.sdk.android.ContactsUploadResult;
 import com.digits.sdk.android.ContactsUploadService;
 import com.digits.sdk.android.Digits;
 import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
 import com.digits.sdk.android.DigitsSession;
-import com.digits.sdk.android.DigitsUser;
 import com.digits.sdk.android.SessionListener;
+import com.digits.sdk.android.models.Contacts;
+import com.digits.sdk.android.models.ContactsUploadResult;
+import com.digits.sdk.android.models.DigitsUser;
 import com.google.gson.Gson;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterApiException;
@@ -43,8 +42,8 @@ import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener, AuthCallback {
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
-    static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
+    static final String TWITTER_KEY = BuildConfig.DIGITS_KEY;
+    static final String TWITTER_SECRET = BuildConfig.DIGITS_SECRET;
 
     List<String> logBuffer = new ArrayList<>();
     ArrayAdapter<String> logAdapter;
@@ -58,12 +57,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         broadcastReceiver = new ContactsUploadResultReceiver();
         TwitterAuthConfig twitterConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric fabric = new Fabric.Builder(this)
-                .kits(new TwitterCore(twitterConfig), new Answers(), new Digits())
+                .kits(new TwitterCore(twitterConfig), new Answers(), new Digits.Builder().build())
                 .logger(new DefaultLogger(Log.DEBUG))
                 .debuggable(true)
                 .build();
         Fabric.with(fabric);
-        DigitsSession digitsSession = Digits.getSessionManager().getActiveSession();
+        DigitsSession digitsSession = Digits.getActiveSession();
         log("initializing, TWITTER_KEY=%s, TWITTER_SECRET=%s, session=%s", TWITTER_KEY, TWITTER_SECRET, jsonParser.toJson(digitsSession));
         setContentView(R.layout.activity_main);
         Button clearSessionButton = (Button) findViewById(R.id.clear_session);
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getButton.setOnClickListener(this);
         DigitsAuthButton digitsButton = (DigitsAuthButton) findViewById(R.id.auth_button);
         digitsButton.setCallback(this);
-        Digits.getInstance().addSessionListener(this);
+        Digits.addSessionListener(this);
         ListView logView = (ListView) findViewById(R.id.log);
         logView.setAdapter(logAdapter);
     }
@@ -98,16 +97,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.clear_session:
-                Digits.getSessionManager().clearActiveSession();
+                Digits.clearActiveSession();
                 log("clear session, session=%s", jsonParser.toJson(
-                        Digits.getSessionManager().getActiveSession()));
+                        Digits.getActiveSession()));
                 break;
             case R.id.upload:
-                Digits.getInstance().getContactsClient().startContactsUpload();
+                Digits.uploadContacts();
                 break;
             case R.id.get:
-                Digits.getInstance().getContactsClient().lookupContactMatches(null, null,
-                        new ContactsCallback<Contacts>() {
+                Digits.findFriends(null, null, new ContactsCallback<Contacts>() {
 
                             @Override
                             public void success(Result<Contacts> result) {
@@ -121,8 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 log("contact match lookup success, matches=%s, cursor=%s",
                                         matches, cursor);
                                 if (!TextUtils.isEmpty(cursor)) {
-                                    Digits.getInstance().getContactsClient().lookupContactMatches(
-                                            cursor, null, this);
+                                    Digits.findFriends(cursor, null, this);
                                 }
                             }
 

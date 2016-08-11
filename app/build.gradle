@@ -50,7 +50,7 @@ dependencies {
     compile('com.crashlytics.sdk.android:answers:1.3.8@aar') {
         transitive = true;
     }
-    compile('com.digits.sdk.android:digits:1.11.0@aar') {
+    compile('com.digits.sdk.android:digits:2.0.0@aar') {
         transitive = true;
     }
 }

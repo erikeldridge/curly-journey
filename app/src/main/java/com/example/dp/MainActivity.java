@@ -42,8 +42,8 @@ import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SessionListener, AuthCallback {
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    static final String TWITTER_KEY = BuildConfig.DIGITS_KEY;
-    static final String TWITTER_SECRET = BuildConfig.DIGITS_SECRET;
+    static final String TWITTER_KEY = BuildConfig.TWITTER_KEY;
+    static final String TWITTER_SECRET = BuildConfig.TWITTER_SECRET;
 
     List<String> logBuffer = new ArrayList<>();
     ArrayAdapter<String> logAdapter;
